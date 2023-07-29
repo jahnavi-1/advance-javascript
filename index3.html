@@ -1,0 +1,56 @@
+<html>
+    <body>
+        <form onsubmit="saveToLocalStorage(event)">
+            <label>Name:</label>
+            <input type="text" name="username" required>
+            <label>Email:</label>
+            <input type="email" name="emailId" required>
+            <label>Phone Number:</label>
+            <input type="tel" name="phone">
+            <button>Submit</button>
+        </form>
+        <ul id="listOfitems"></ul>
+    </body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
+    <script>
+        function saveToLocalStorage(event)
+        {
+            event.preventDefault();
+            const name=event.target.username.value;
+            const email=event.target.emailId.value;
+            const phonenumber=event.target.phone.value;
+            const obj={
+                name:name,
+                email:email,
+                phonenumber:phonenumber
+            }
+            //localStorage.setItem(obj.email,JSON.stringify(obj));
+            axios.post("https://crudcrud.com/api/6af1c90b60904e62940798a7c1787bcb/apointmentData",obj)
+            .then((response)=>{
+                showUserOnscreen(response.data)
+                //console.log(response);
+
+            })
+            .catch((error)=>{
+                console.log(error);
+            })
+            //showUserOnscreen(obj)
+
+        }
+        function showUserOnscreen(obj){
+            const parentItem =document.getElementById('listOfitems')
+            const childItem=document.createElement('li');
+            childItem.textContent=obj.name+'-'+obj.email+'-'+obj.phonenumber;
+
+            const deletButton =document.createElement('input');
+            deletButton.type="button"
+            deletButton.value="Delete"
+            deletButton.onclick=()=>{
+                localStorage.removeItem(obj.email);
+                parentItem.removeChild(childItem);
+            }
+            childItem.appendChild(deletButton);
+            parentItem.appendChild(childItem);
+        }
+    </script>
+</html>
