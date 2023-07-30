@@ -48,7 +48,7 @@
                         showUserOnscreen(response.data[i])
                     }
                 })
-                .catch((errror)=>{
+                .catch((error)=>{
                     console.log(error);
                 })
             })
@@ -57,17 +57,33 @@
         function showUserOnscreen(obj){
             const parentItem =document.getElementById('listOfitems')
             const childItem=document.createElement('li');
+            childItem.dataset.id = obj._id;
             childItem.textContent=obj.name+'-'+obj.email+'-'+obj.phonenumber;
 
             const deletButton =document.createElement('input');
             deletButton.type="button"
             deletButton.value="Delete"
             deletButton.onclick=()=>{
-                localStorage.removeItem(obj.email);
-                parentItem.removeChild(childItem);
+                deleteUser(obj._id);
             }
             childItem.appendChild(deletButton);
             parentItem.appendChild(childItem);
         }
+        function deleteUser(userId){
+    axios.delete(`https://crudcrud.com/api/6af1c90b60904e62940798a7c1787bcb/apointmentData/${userId}`)
+            .then(res =>{
+                removeUserFromScreen(userId);
+            })
+            .catch(err=>{
+                console.log(err);
+            })
+}
+function removeUserFromScreen(userId){
+    const listItem = document.querySelector(`li[data-id="${userId}"]`);
+    if (listItem) {
+        listItem.remove();
+    }
+}
+        
     </script>
 </html>
