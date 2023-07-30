@@ -15,7 +15,9 @@
     <script>
         function saveToLocalStorage(event)
         {
+            
             event.preventDefault();
+            console.log("jsdhjdb");
             const name=event.target.username.value;
             const email=event.target.emailId.value;
             const phonenumber=event.target.phone.value;
@@ -25,6 +27,7 @@
                 phonenumber:phonenumber
             }
             //localStorage.setItem(obj.email,JSON.stringify(obj));
+        
             axios.post("https://crudcrud.com/api/6af1c90b60904e62940798a7c1787bcb/apointmentData",obj)
             .then((response)=>{
                 showUserOnscreen(response.data)
@@ -35,8 +38,22 @@
                 console.log(error);
             })
             //showUserOnscreen(obj)
-
         }
+            window.addEventListener("DOMContentLoaded",()=>{
+                axios.get("https://crudcrud.com/api/6af1c90b60904e62940798a7c1787bcb/apointmentData")
+                .then((response)=>{
+                    console.log(response)
+                    for(var i=0;i<response.data.length;i++)
+                    {
+                        showUserOnscreen(response.data[i])
+                    }
+                })
+                .catch((errror)=>{
+                    console.log(error);
+                })
+            })
+        
+        
         function showUserOnscreen(obj){
             const parentItem =document.getElementById('listOfitems')
             const childItem=document.createElement('li');
