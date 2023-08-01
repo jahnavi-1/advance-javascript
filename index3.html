@@ -1,6 +1,7 @@
+<!DOCTYPE html>
 <html>
     <body>
-        <form onsubmit="saveToLocalStorage(event)">
+        <form id="userForm" onsubmit="saveToLocalStorage(event)">
             <label>Name:</label>
             <input type="text" name="username" required>
             <label>Email:</label>
@@ -13,77 +14,114 @@
     </body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
     <script>
-        function saveToLocalStorage(event)
-        {
-            
-            event.preventDefault();
-            console.log("jsdhjdb");
-            const name=event.target.username.value;
-            const email=event.target.emailId.value;
-            const phonenumber=event.target.phone.value;
-            const obj={
-                name:name,
-                email:email,
-                phonenumber:phonenumber
-            }
-            //localStorage.setItem(obj.email,JSON.stringify(obj));
-        
-            axios.post("https://crudcrud.com/api/6af1c90b60904e62940798a7c1787bcb/apointmentData",obj)
-            .then((response)=>{
-                showUserOnscreen(response.data)
-                //console.log(response);
+        let editingUserId = null;
 
-            })
-            .catch((error)=>{
-                console.log(error);
-            })
-            //showUserOnscreen(obj)
+        function saveToLocalStorage(event) {
+            event.preventDefault();
+            const name = event.target.username.value;
+            const email = event.target.emailId.value;
+            const phonenumber = event.target.phone.value;
+            const obj = {
+                name: name,
+                email: email,
+                phonenumber: phonenumber
+            };
+
+            if (editingUserId) {
+                // Update existing user
+                axios.put(`https://crudcrud.com/api/9d3136b93d924e51a59b5882f20dcc57/apointmentData/${editingUserId}`, obj)
+                    .then((response) => {
+                        // Update the user's details on the screen
+                        const listItem = document.querySelector(`li[data-id="${editingUserId}"]`);
+                        if (listItem) {
+                            listItem.textContent = response.data.name + '-' + response.data.email + '-' + response.data.phonenumber;
+                        }
+
+                        // Clear the form fields
+                        event.target.reset();
+
+                        // Reset the editingUserId
+                        editingUserId = null;
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
+            } else {
+                // Create new user
+                axios.post("https://crudcrud.com/api/9d3136b93d924e51a59b5882f20dcc57/apointmentData", obj)
+                    .then((response) => {
+                        showUserOnscreen(response.data);
+                        // Clear the form fields
+                        event.target.reset();
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
+            }
         }
-            window.addEventListener("DOMContentLoaded",()=>{
-                axios.get("https://crudcrud.com/api/6af1c90b60904e62940798a7c1787bcb/apointmentData")
-                .then((response)=>{
-                    console.log(response)
-                    for(var i=0;i<response.data.length;i++)
-                    {
-                        showUserOnscreen(response.data[i])
+
+        window.addEventListener("DOMContentLoaded", () => {
+            axios.get("https://crudcrud.com/api/9d3136b93d924e51a59b5882f20dcc57/apointmentData")
+                .then((response) => {
+                    for (var i = 0; i < response.data.length; i++) {
+                        showUserOnscreen(response.data[i]);
                     }
                 })
-                .catch((error)=>{
+                .catch((error) => {
                     console.log(error);
-                })
-            })
-        
-        
-        function showUserOnscreen(obj){
-            const parentItem =document.getElementById('listOfitems')
-            const childItem=document.createElement('li');
-            childItem.dataset.id = obj._id;
-            childItem.textContent=obj.name+'-'+obj.email+'-'+obj.phonenumber;
+                });
+        });
 
-            const deletButton =document.createElement('input');
-            deletButton.type="button"
-            deletButton.value="Delete"
-            deletButton.onclick=()=>{
+        function showUserOnscreen(obj) {
+            const parentItem = document.getElementById('listOfitems');
+            const childItem = document.createElement('li');
+            childItem.dataset.id = obj._id;
+            childItem.textContent = obj.name + '-' + obj.email + '-' + obj.phonenumber;
+
+            const editButton = document.createElement('input');
+            editButton.type = "button";
+            editButton.value = "Edit";
+            editButton.onclick = () => {
+                editUser(obj._id, obj.name, obj.email, obj.phonenumber);
+            };
+            childItem.appendChild(editButton);
+
+            const deleteButton = document.createElement('input');
+            deleteButton.type = "button";
+            deleteButton.value = "Delete";
+            deleteButton.onclick = () => {
                 deleteUser(obj._id);
-            }
-            childItem.appendChild(deletButton);
+            };
+            childItem.appendChild(deleteButton);
             parentItem.appendChild(childItem);
         }
-        function deleteUser(userId){
-    axios.delete(`https://crudcrud.com/api/6af1c90b60904e62940798a7c1787bcb/apointmentData/${userId}`)
-            .then(res =>{
-                removeUserFromScreen(userId);
-            })
-            .catch(err=>{
-                console.log(err);
-            })
-}
-function removeUserFromScreen(userId){
-    const listItem = document.querySelector(`li[data-id="${userId}"]`);
-    if (listItem) {
-        listItem.remove();
-    }
-}
-        
+
+        function editUser(userId, name, email, phonenumber) {
+            editingUserId = userId;
+
+            // Populate the form fields with existing user data
+            const form = document.getElementById('userForm');
+            form.username.value = name;
+            form.emailId.value = email;
+            form.phone.value = phonenumber;
+        }
+
+        function deleteUser(userId) {
+            axios.delete(`https://crudcrud.com/api/9d3136b93d924e51a59b5882f20dcc57/apointmentData/${userId}`)
+                .then(res => {
+                    removeUserFromScreen(userId);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+        }
+
+        function removeUserFromScreen(userId) {
+            const listItem = document.querySelector(`li[data-id="${userId}"]`);
+            if (listItem) {
+                listItem.remove();
+            }
+        }
+
     </script>
 </html>
